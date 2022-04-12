@@ -1,33 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 
 public class PlayerMovement : MonoBehaviour
 {
-
-    //public FixedJoystick variableJoystick;
+    public TMP_Text score;
    
     public static PlayerMovement instance;
     public GameObject Attackpos;
-    public GameObject Ball;
-
-    [SerializeField] float MovementSpeed;
+    public LayerMask enemylayer;
+    int Score;
+    public float MovementSpeed;
     [SerializeField] float JumpForce;
     [SerializeField] Vector3 range;
-    [SerializeField] Transform GroundPos;
+ 
     [SerializeField] LayerMask GroundLayer;
     float MoveInput;
-    Rigidbody2D Mybody;
+    Rigidbody Mybody;
     public bool IsFacingRight;
-    Animator anim;
+   // Animator anim;
     [HideInInspector]
     public int Keycount;
+    public float dist;
+    float force;
 
 
     bool isGrounded;
 
-   public CapsuleCollider2D mainCollider;
+   public BoxCollider mainCollider;
     private void Awake()
     {
         if (instance == null)
@@ -38,46 +40,69 @@ public class PlayerMovement : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
-        Mybody = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
+        Mybody = GetComponent<Rigidbody>();
+       // anim = GetComponent<Animator>();
     }
     private void Start()
     {
-        mainCollider = GetComponent<CapsuleCollider2D>();
+        mainCollider = GetComponent<BoxCollider>();
         IsFacingRight = true;
-        //Jumpheight = 0.4f;
+        
     }
     private void Update()
     {
-        //if (Input.GetMouseButtonDown(0))
-        //{
-        //    anim.SetBool("attack", true);
-            
-        //}
-        //else
-        //{
-        //    anim.SetBool("attack", false);
+        if (Input.GetMouseButtonDown(0))
+        {
 
-        //}
+
+            Fire();
+        }
+
 
     }
     public void Fire()
     {
 
-        StartCoroutine(Fire1());
-    }
-    IEnumerator Fire1()
-    {
-        anim.SetBool("attack", true);
-        yield return new WaitForSeconds(.15f);
-        anim.SetBool("attack", false);
+        if (transform.localScale.x > 0)
+        {
+            force = -1;
+        }
+        else if (transform.localScale.x < 0)
+        {
+            force = 1;
+        }
 
 
+        //RaycastHit2D hit3 = Physics2D.Raycast(Attackpos.transform.position, Vector2.left * force*dist);
+        //Debug.DrawRay(Attackpos.transform.position, Vector2.left * force*dist, Color.red);
+
+        //if (hit3.collider != null)
+        //{
+
+        //    if (hit3.collider.gameObject.CompareTag("enemy"))
+        //    {
+        //        Debug.Log("Fire");
+        //        Debug.DrawRay(Attackpos.transform.position, Vector2.left * force, Color.yellow);
+        //        Destroy(hit3.collider.gameObject);
+        //    }
+        //}
+        RaycastHit hit;
+        // Does the ray intersect any objects excluding the player layer
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.left)*force, out hit, 3, enemylayer))
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.left)*force * hit.distance, Color.yellow);
+            Destroy(hit.transform.gameObject);
+            Score += 100;
+            score.text = "score : " + Score.ToString();
+        }
+        else
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.left)*force * 2, Color.white);
+            Debug.Log("Did not Hit");
+        }
     }
-    public void SpawnBall()
-    {
-        Instantiate(Ball, Attackpos.transform.position, Quaternion.identity);
-    }
+    
+   
     private void FixedUpdate()
     {
 
@@ -91,15 +116,9 @@ public class PlayerMovement : MonoBehaviour
         //  Debug.Log(MoveInput);
 
         
-        anim.SetFloat("Run", Mathf.Abs(MoveInput));
+        //anim.SetFloat("Run", Mathf.Abs(MoveInput));
         Mybody.velocity = new Vector2(MoveInput, Mybody.velocity.y);
-        //if(Input.GetKeyDown(KeyCode.Space))
-        //{
-        //    if(Mybody.velocity.y>0)
-        //    {
-        //        Mybody.velocity = new Vector2(Mybody.velocity.x, Mybody.velocity.y + Jumpheight);
-        //    }
-        //}
+       
         if (!IsFacingRight && MoveInput > 0 || IsFacingRight && MoveInput < 0)
         {
             Flip();
@@ -133,7 +152,7 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        if (isGrounded)
+        if (isGrounded && Input.GetKey(KeyCode.Space))
         {
 
             Mybody.velocity = new Vector2(Mybody.velocity.x, JumpForce);
@@ -144,7 +163,7 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator SetJumpAnim()
     {
-        anim.SetBool("jump", true);
+      //  anim.SetBool("jump", true);
         yield return new WaitForSeconds(.9f);
         while (!isGrounded)
         {
@@ -152,12 +171,28 @@ public class PlayerMovement : MonoBehaviour
         }
         if (isGrounded)
         {
-            anim.SetBool("jump", false);
+           // anim.SetBool("jump", false);
 
         }
 
 
     }
-
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.CompareTag("Coin") || collision.gameObject.CompareTag("enemy") 
+            || collision.gameObject.CompareTag("Ground") )
+            {
+            Destroy(collision.gameObject);
+            Score += 100;
+            score.text = "score : " + Score;
+        }
+        if (collision.gameObject.CompareTag("finish"))
+        {
+            Debug.Log("you win");
+            Score += 100;
+            score.text = "score : " + Score;
+            MovementSpeed = 0f;
+        }
+    }
 
 }
