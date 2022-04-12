@@ -318,7 +318,7 @@
  <HintPath>W:/Unity/2020.3.30f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/Variations/mono/Managed/UnityEngine.XRModule.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.UI">
- <HintPath>W:/UnityProjects/mario/My project/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+ <HintPath>W:/UnityProjects/mario game/My project/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
  </Reference>
  <Reference Include="netstandard">
  <HintPath>W:/Unity/2020.3.30f1/Editor/Data/NetStandard/ref/2.0.0/netstandard.dll</HintPath>
